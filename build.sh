@@ -1,42 +1,21 @@
-#bin/bash
+#!/bin/bash
+clear
 var=userdebug
 device=karnak
-d=$(date +%Y-%m-%d)
-CM_VERSION=16.0
-write=echo
-
-$write "_ _                                              "
-$write "| (_)_ __   ___  __ _  __ _  ___  ___  ___       "
-$write "| | | '_ \\ / _ \\/ _\` |/ _\` |/ _ \\/ _ \\/ __|"
-$write "| | | | | |  __/ (_| | (_| |  __/ (_) \\__ \\    "
-$write "|_|_|_| |_|\\___|\\__,_|\\__, |\\___|\\___/|___/ "
-$write "                      |___/                      "
-
+# unexport _JAVA_OPTIONS of availible in .bashrc
+if  $_JAVA_OPTIONS
+then
+export -n _JAVA_OPTIONS
+fi
 export ANDROID_JACK_VM_ARGS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx4G"
-
-chmod +x build_kernel.sh
-./build_kernel.sh
-
-echo "building lineage_$device-$var $CM_VERSION"
-
-
-
-echo "setting enviroment for $device"
+echo "[BUILD] Building lineage_$device-$var"
+echo "[ENVIROMENT] Setting Enviroment for $device"
 source build/envsetup.sh
-
-
-
-echo "adding $device to the lunch menu"
+# prevent from the kernel build counting up the numbers
+rm -rf out/target/product/$device/obj/KERNEL_OBJ/.version
+rm -rf out/target/product/$device/obj/KERNEL_OBJ/.config.old
+echo "[BUILD] Adding $device to the lunch menu"
 lunch lineage_$device-$var
-echo "making logging directory"
-rm -rf logd
-mkdir logd
-
-
-
-echo "now cooking some bacon...."
-echo "WARNING: THIS MAY TAKE SOME TIME"
-
-make bacon -j6 | tee logd/log-$d
-
+#make installclean and then make bacon. make clean is implemented because to fix vendor image mismatch
+cmka bacon
 
